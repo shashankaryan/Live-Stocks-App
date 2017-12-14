@@ -11,12 +11,15 @@ class App extends Component {
 		itemsList: [],
 	}
 	componentDidMount() {
+		// initialising WebSocket after Component mounts
 		const connection = new WebSocket('ws://stocks.mnet.website')
 		connection.onmessage = evt => {
-			this.handleUpdateMessage(evt.data)
+			this.handleUpdateMessage(evt.data) // call handleUpdateMessage on message.
 		}
 	}
 
+	// Get the current snapshot after update as
+	// per the latest WebSocket message to firebase.
 	getCurrentData = () => {
 		this.database.once('value', snapshot => {
 			const items = []
@@ -30,9 +33,10 @@ class App extends Component {
 				items.push(item)
 			})
 			// console.log(items)
-			this.setState({ items })
+			this.setState({ items }) // state varibale items is used to display the results.
 		})
 	}
+
 	// Firebase Initiialised
 
 	appFirebase = firebase.initializeApp(DB_CONFIG)
@@ -41,6 +45,9 @@ class App extends Component {
 		.ref()
 		.child('items')
 
+	// handle the data recieved by Websocket message and converting
+	// in into the form [{name: sth, price: prc, lastUpdated: date},...]
+	/* eslint no-restricted-syntax: ["error", "WithStatement", "BinaryExpression[operator='in']"] */
 	handleData = data => {
 		const keyList = []
 		const result = JSON.parse(`${data}`)
@@ -53,7 +60,6 @@ class App extends Component {
 			finalDict[p[0]] = p[1]
 		}
 		const output = []
-		/* eslint no-restricted-syntax: ["error", "WithStatement", "BinaryExpression[operator='in']"] */
 		let x
 		for (const keys in finalDict) {
 			if (keys != null) {
@@ -64,18 +70,24 @@ class App extends Component {
 				x.lastUpdated = Date()
 			}
 		}
-
 		return output
 	}
 
+	// to chech if a partcular item is already present in the firebase or not.
 	isItemPresent = (prevItemList, checkItem) =>
 		// console.log(checkItem)
 		prevItemList.filter(prevList => prevList.name === checkItem)
 
+	// this function is manipulating the data in the firebase
+	// 1. push if an item with new name occurs.  --> completed.
+	// 2. if the item already exists, compare the price of that item and
+	//		update the current price. --> not completed.
 	updateDatabase = currentData => {
 		for (let index = 0; index < currentData.length; index += 1) {
+			// for each item in output
 			const items = []
 			this.database.once('value', snapshot => {
+				// getting current snapshot to compare
 				snapshot.forEach(data => {
 					// console.log(data.val())
 					const item = {
@@ -86,30 +98,37 @@ class App extends Component {
 					items.push(item)
 				})
 				// this.setState({ itemsList })
-				const itemPresent = this.isItemPresent(items, currentData[index].name)
+				const itemPresent = this.isItemPresent(items, currentData[index].name) // checking if item is present in the current snapshot
 				if (itemPresent.length === 0) {
+					// pushing an item with new name.
 					currentData[index].lastUpdated = Date()
 					this.database.push(currentData[index])
 				} else {
-					// console.log('item already present, so updating')
+					// updating price --> this needs to be completed.
+					console.log('item already present, so update required.')
 					currentData[index].lastUpdated = Date()
-					const query = this.database.orderByChild('name').equalTo(currentData[index].name)
-					query.on('value', snap => {
-						const changeItem = snap.val()
-						const key = Object.keys(changeItem)
-						const updateKey = this.database.child(key[0])
-						updateKey.update(currentData[index])
-					})
+
+					// This is ill code for the update, not completed.
+
+					// const query = this.database.orderByChild('name').equalTo(currentData[index].name)
+					// query.on('value', snap => {
+					// 	const changeItem = snap.val()
+					// 	const key = Object.keys(changeItem)
+					// 	const updateKey = this.database.child(key[0])
+					// 	updateKey.update(currentData[index])
+					// })
 				}
 			})
 		}
 	}
 
+	// handlee when a new message comes from WebSocket.
 	handleUpdateMessage = data => {
-		const priceDict = this.handleData(data)
-		this.updateDatabase(priceDict)
-		this.getCurrentData()
+		const priceDict = this.handleData(data) // modify the recieved data in correct order.
+		this.updateDatabase(priceDict) // modified data/ latest data from WebSocket is passed for the firbase update/push.
+		this.getCurrentData() // get the currentData from firebase and update the state varibale "itens"
 		// console.log(this.state.items)
+		// for testing the message from WebSocket
 		const finalList = JSON.stringify(priceDict)
 		this.setState({ priceList: finalList })
 	}
@@ -118,9 +137,9 @@ class App extends Component {
 		return (
 			<div className="stock">
 				<h1>(Live) Stock(s) App</h1>
-				{/* <pre>
+				<pre>
 					<code>{this.state.priceList}</code>
-				</pre> */}
+				</pre>
 				<hr />
 				<Table items={this.state.items} />
 				<h3 className="foot">Last Updated: A few seconds ago...</h3>
