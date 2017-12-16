@@ -1,16 +1,18 @@
 // @flow
 
 import React, { Component } from 'react'
-import firebase from 'firebase'
-import DB_CONFIG from '../Config/config'
 import Table from './Table'
+import Loading from './Loading'
+import Indicator from './Indicators'
 
 class App extends Component {
+	// initializing state variables
 	state = {
-		items: [],
-		itemsList: [],
+		items: [], // initializing empty list of items
+		count: 0, // setting count to 0
 	}
-	componentDidMount() {
+
+	componentWillMount() {
 		// initialising WebSocket after Component mounts
 		const connection = new WebSocket('ws://stocks.mnet.website')
 		connection.onmessage = evt => {
@@ -18,47 +20,48 @@ class App extends Component {
 		}
 	}
 
-	// Get the current snapshot after update as
-	// per the latest WebSocket message to firebase.
-	getCurrentData = () => {
-		this.database.once('value', snapshot => {
-			const items = []
-			snapshot.forEach(data => {
-				// console.log(data.val())
-				const item = {
-					name: data.val().name,
-					price: data.val().price,
-					lastUpdated: data.val().lastUpdated,
-				}
-				items.push(item)
-			})
-			// console.log(items)
-			this.setState({ items }) // state varibale items is used to display the results.
-		})
+	// ===========================================================================
+	// function to convert time into days, hours, minute, seconds
+	updateTime = (duration: any) => {
+		const minutes = duration.getMinutes().toString().length === 1 ? `0${duration.getMinutes()}` : duration.getMinutes()
+		const hours = duration.getHours().toString().length === 1 ? `0${duration.getHours()}` : duration.getHours()
+		const ampm = duration.getHours() >= 12 ? 'pm' : 'am'
+		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+		let format
+		if (duration.getMinutes() === new Date().getMinutes()) {
+			format = 'A Few Second Ago...'
+		} else if (duration.getDate() === new Date().getDate()) {
+			format = `${hours}:${minutes} ${ampm}`
+		} else if (duration.getFullYear() === new Date().getFullYear()) {
+			format = `${duration.getDate()} ${months[duration.getMonth()]}, ${hours}:${minutes} ${ampm}`
+		} else {
+			format = `${duration.getDate()} ${months[
+				duration.getMonth()
+			]} ${duration.getFullYear()} ${hours}:${minutes} ${ampm}`
+		}
+		return format
 	}
+	// ===========================================================================
 
-	// Firebase Initiialised
-
-	appFirebase = firebase.initializeApp(DB_CONFIG)
-	database = this.appFirebase
-		.database()
-		.ref()
-		.child('items')
-
-	// handle the data recieved by Websocket message and converting
-	// in into the form [{name: sth, price: prc, lastUpdated: date},...]
+	// ===========================================================================
+	// Arrange the data recieved by Websocket message and converting
+	// in into the form [{name: sth, price: prc, lastUpdated: date, updateDuration: dur},...]
 	/* eslint no-restricted-syntax: ["error", "WithStatement", "BinaryExpression[operator='in']"] */
-	handleData = data => {
-		const keyList = []
+	// ===========================================================================
+	handleData = (data: any) => {
+		const keyList = [] // list of all the keys. eg, name of item
 		const result = JSON.parse(`${data}`)
-		const valueList = []
-		const finalDict = []
+		const valueList = [] // list of all the values. eg. price of item
+		const finalDict = [] // arranging in forn of {name: price}
 		for (let i = 0; i < result.length; i += 1) {
 			const p = result[i]
 			keyList.push(p[0])
 			valueList.push(p[1])
 			finalDict[p[0]] = p[1]
 		}
+
+		// Getting the data arranged in desired order inside a list of sictionaries.
+		// =========================================================================
 		const output = []
 		let x
 		for (const keys in finalDict) {
@@ -67,82 +70,97 @@ class App extends Component {
 				x.name = keys
 				x.price = finalDict[keys]
 				output.push(x)
-				x.lastUpdated = Date()
+				x.lastUpdated = Date.now()
+				x.updateDuration = ''
 			}
 		}
-		return output
+
+		// =========================================================================
+		return output // returning data in desired format.
 	}
+	// ===========================================================================
 
-	// to chech if a partcular item is already present in the firebase or not.
-	isItemPresent = (prevItemList, checkItem) =>
-		// console.log(checkItem)
-		prevItemList.filter(prevList => prevList.name === checkItem)
+	// This function is to check if a partcular item is already present in the firebase/item list or not.
+	// ===========================================================================
+	isItemPresent = (prevItemList: any, checkItem: any) => prevItemList.filter(prevList => prevList.name === checkItem)
+	// ===========================================================================
 
-	// this function is manipulating the data in the firebase
-	// 1. push if an item with new name occurs.  --> completed.
-	// 2. if the item already exists, compare the price of that item and
-	//		update the current price. --> not completed.
-	updateDatabase = currentData => {
+	// This function is updating the data in Display.
+	// Mechanism goes in 2 steps:
+	// #1. If an item with new name occurs, push it to display.
+	// #2. if the item already exists, compare the price of that item and
+	//		update the current price to Display.
+	// ===========================================================================
+
+	updateDisplay = (currentData: any) => {
 		for (let index = 0; index < currentData.length; index += 1) {
-			// for each item in output
-			const items = []
-			this.database.once('value', snapshot => {
-				// getting current snapshot to compare
-				snapshot.forEach(data => {
-					// console.log(data.val())
-					const item = {
-						name: data.val().name,
-						price: data.val().price,
-						lastUpdated: data.val().lastUpdated,
-					}
-					items.push(item)
-				})
-				// this.setState({ itemsList })
-				const itemPresent = this.isItemPresent(items, currentData[index].name) // checking if item is present in the current snapshot
-				if (itemPresent.length === 0) {
-					// pushing an item with new name.
-					currentData[index].lastUpdated = Date()
-					this.database.push(currentData[index])
+			// For each item in output
+
+			const previousItems = this.state.items // saving state in previousItems variable.
+
+			const itemPresent = this.isItemPresent(previousItems, currentData[index].name) // checking if item is present in the current snapshot
+
+			// #1 step.
+			// =======================================================================
+
+			if (itemPresent.length === 0) {
+				this.state.items.push(currentData[index])
+			} else {
+				// #2 step.
+				// =====================================================================
+				const indexItem = previousItems.indexOf(itemPresent[0]) // Checkinf for index of present item in the list.
+				const myDiv = document.getElementById(currentData[index].name)
+				if (currentData[index].price > previousItems[indexItem].price) {
+					myDiv.setAttribute('style', 'background-color: darkolivegreen;')
 				} else {
-					// updating price --> this needs to be completed.
-					console.log('item already present, so update required.')
-					currentData[index].lastUpdated = Date()
-
-					// This is ill code for the update, not completed.
-
-					// const query = this.database.orderByChild('name').equalTo(currentData[index].name)
-					// query.on('value', snap => {
-					// 	const changeItem = snap.val()
-					// 	const key = Object.keys(changeItem)
-					// 	const updateKey = this.database.child(key[0])
-					// 	updateKey.update(currentData[index])
-					// })
+					myDiv.setAttribute('style', 'background-color: darkred;')
 				}
-			})
+				previousItems[indexItem].price = currentData[index].price // Updating price
+				previousItems[indexItem].lastUpdated = currentData[index].lastUpdated // Updating lastUpdated
+				// =====================================================================
+				this.setState({ items: previousItems }) // setting state with updated results.
+				this.setState({ count: this.state.items.length })
+			}
 		}
 	}
-
-	// handlee when a new message comes from WebSocket.
-	handleUpdateMessage = data => {
-		const priceDict = this.handleData(data) // modify the recieved data in correct order.
-		this.updateDatabase(priceDict) // modified data/ latest data from WebSocket is passed for the firbase update/push.
-		this.getCurrentData() // get the currentData from firebase and update the state varibale "itens"
-		// console.log(this.state.items)
-		// for testing the message from WebSocket
-		const finalList = JSON.stringify(priceDict)
-		this.setState({ priceList: finalList })
+	// This function is used to update the duration since recent WebSocket recieved.
+	// ===========================================================================
+	updateDuration = (items: any) => {
+		for (let item = 0; item < items.length; item += 1) {
+			/* eslint new-cap: ["error", { "newIsCapExceptionPattern": "^Date\.." }] */
+			const durationDifference = Date.now() - items[item].lastUpdated
+			if (durationDifference < 60000) {
+				items[item].updateDuration = `${durationDifference / 1000} Seconds Ago...`
+			} else {
+				items[item].updateDuration = this.updateTime(items[item].lastUpdated)
+			}
+		}
+		this.setState({ items })
 	}
+	// ===========================================================================
+
+	// Handles the data when a new message comes from WebSocket.
+	// ===========================================================================
+	handleUpdateMessage = (data: any) => {
+		const priceDict = this.handleData(data) // modify the recieved data in correct order.
+		this.updateDisplay(priceDict) // Display the data.
+		this.updateDuration(this.state.items) // Show last update duration for items.
+	}
+	// ===========================================================================
 
 	render() {
+		let tableComponent
+		if (this.state.count < 13) {
+			tableComponent = <Loading />
+		} else {
+			tableComponent = <Indicator />
+		}
+
 		return (
 			<div className="stock">
 				<h1>(Live) Stock(s) App</h1>
-				<pre>
-					<code>{this.state.priceList}</code>
-				</pre>
-				<hr />
 				<Table items={this.state.items} />
-				<h3 className="foot">Last Updated: A few seconds ago...</h3>
+				{tableComponent}
 			</div>
 		)
 	}

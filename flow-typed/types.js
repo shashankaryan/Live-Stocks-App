@@ -3,7 +3,8 @@
 export type Item = {
 	name: string,
 	price: string,
-	lastUpdated: string,
+	lastUpdated: any,
+	updateDuration: any,
 }
 
 declare var module: {
