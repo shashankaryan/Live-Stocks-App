@@ -14,7 +14,7 @@ class App extends Component {
 
 	componentWillMount() {
 		// initialising WebSocket after Component mounts
-		const connection = new WebSocket('wss://stocks.mnet.website')
+		const connection = new WebSocket('ws://stocks.mnet.website')
 		connection.onmessage = evt => {
 			this.handleUpdateMessage(evt.data) // call handleUpdateMessage on message.
 		}
