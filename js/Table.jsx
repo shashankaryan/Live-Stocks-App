@@ -16,13 +16,13 @@ class Table extends Component {
 					<thead>
 						<tr>
 							<th>
-								<h1>Item</h1>
+								<h1>Ticker</h1>
 							</th>
 							<th>
 								<h1>Price</h1>
 							</th>
 							<th>
-								<h1>Last Updated</h1>
+								<h1>Last Update</h1>
 							</th>
 						</tr>
 					</thead>

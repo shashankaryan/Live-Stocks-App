@@ -2,7 +2,7 @@
 	"scripts": {
 		"format": "prettier --write --single-quote --print-width=120 --parser=flow --tab-width=2 \"js/**/*.{js,jsx}\"",
 		"lint": "eslint **/*.{js/jsx} --quiet",
-		"build": "webpack -p",
+		"build": "webpack -p --config ./webpack.prod.config.js",
 		"watch": "webpack --watch",
 		"dev": "webpack-dev-server",
 		"test": "jest",
@@ -65,9 +65,7 @@
 	"name": "LiveStocks",
 	"version": "1.0.0",
 	"description": "This app shows the real time price of the different inventory.",
-	"main": "server.js",
-	"repository": "https://github.com/shashankaryan/Live-Stocks-App",
-	"homepage": "https://shashankaryan.github.io/Live-Stocks-App",
+	"homepage": "https://shashankaryan.github.io/Live-Stocks-App/",
 	"author": "Shashank Aryan <aryanshashank31@gmail.com>",
 	"license": "MIT"
 }

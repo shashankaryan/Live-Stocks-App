@@ -14,23 +14,27 @@ class App extends Component {
 
 	componentWillMount() {
 		// initialising WebSocket after Component mounts
-		const connection = new WebSocket('ws://stocks.mnet.website')
+		const connection = new WebSocket('wss://stocks.mnet.website')
 		connection.onmessage = evt => {
 			this.handleUpdateMessage(evt.data) // call handleUpdateMessage on message.
 		}
 	}
 
+	// This function is to get hour of a Date in 12hr format.
+	// ===========================================================================
+	hours12 = date => (date.getHours() + 24) % 12 || 12
+	// ===========================================================================
+
 	// ===========================================================================
 	// function to convert time into days, hours, minute, seconds
-	updateTime = (duration: any) => {
+	updateTime = (lastupdate: number) => {
+		const duration = new Date(lastupdate)
 		const minutes = duration.getMinutes().toString().length === 1 ? `0${duration.getMinutes()}` : duration.getMinutes()
-		const hours = duration.getHours().toString().length === 1 ? `0${duration.getHours()}` : duration.getHours()
-		const ampm = duration.getHours() >= 12 ? 'pm' : 'am'
+		const hours = this.hours12(duration).toString().length === 1 ? `0${this.hours12(duration)}` : this.hours12(duration)
+		const ampm = duration.getHours() >= 12 ? 'PM' : 'AM'
 		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 		let format
-		if (duration.getMinutes() === new Date().getMinutes()) {
-			format = 'A Few Second Ago...'
-		} else if (duration.getDate() === new Date().getDate()) {
+		if (duration.getDate() === new Date().getDate()) {
 			format = `${hours}:${minutes} ${ampm}`
 		} else if (duration.getFullYear() === new Date().getFullYear()) {
 			format = `${duration.getDate()} ${months[duration.getMonth()]}, ${hours}:${minutes} ${ampm}`
@@ -129,8 +133,10 @@ class App extends Component {
 		for (let item = 0; item < items.length; item += 1) {
 			/* eslint new-cap: ["error", { "newIsCapExceptionPattern": "^Date\.." }] */
 			const durationDifference = Date.now() - items[item].lastUpdated
-			if (durationDifference < 60000) {
-				items[item].updateDuration = `${durationDifference / 1000} Seconds Ago...`
+			if (durationDifference <= 5000) {
+				items[item].updateDuration = `A Few Seconds Ago...`
+			} else if (durationDifference > 5000 && durationDifference < 60000) {
+				items[item].updateDuration = `${Math.floor(durationDifference / 1000)} Seconds Ago...`
 			} else {
 				items[item].updateDuration = this.updateTime(items[item].lastUpdated)
 			}

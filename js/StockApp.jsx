@@ -10,8 +10,9 @@ const renderApp = () => {
 
 renderApp()
 
-if (module.hot) {
-	module.hot.accept('./App', () => {
-		renderApp()
-	})
-}
+// In Case of Developement
+// if (module.hot) {
+// 	module.hot.accept('./App', () => {
+// 		renderApp()
+// 	})
+// }
