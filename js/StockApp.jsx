@@ -2,10 +2,10 @@
 
 import React from 'react'
 import { render } from 'react-dom'
-import App from './App'
+import Router from './Router'
 
 const renderApp = () => {
-	render(<App />, document.getElementById('app'))
+	render(<Router />, document.getElementById('app'))
 }
 
 renderApp()

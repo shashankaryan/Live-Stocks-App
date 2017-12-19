@@ -17,6 +17,7 @@
 		"babel-register": "6.24.1",
 		"firebase": "4.8.0",
 		"jsonfile": "^4.0.0",
+		"mock-socket": "^7.1.0",
 		"prop-types": "15.5.10",
 		"react": "15.5.4",
 		"react-addons-perf": "15.4.2",
@@ -27,7 +28,8 @@
 		"styled-components": "2.0.0",
 		"webpack": "2.6.1",
 		"webpack-dev-middleware": "1.10.2",
-		"webpack-hot-middleware": "2.18.0"
+		"webpack-hot-middleware": "2.18.0",
+		"ws": "^3.3.3"
 	},
 	"devDependencies": {
 		"babel-core": "6.24.1",
@@ -55,7 +57,6 @@
 		"gh-pages": "^1.1.0",
 		"jest": "20.0.4",
 		"jest-serializer-enzyme": "1.0.0",
-		"mock-socket": "^7.1.0",
 		"moxios": "0.4.0",
 		"nodemon": "1.11.0",
 		"prettier": " 1.7.0",
