@@ -1,6 +1,7 @@
 // @flow
 
 import React, { Component } from 'react'
+import { WebSocket } from 'mock-socket'
 import Table from './Table'
 import Loading from './Loading'
 import Indicator from './Indicators'

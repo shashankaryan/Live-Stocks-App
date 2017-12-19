@@ -1,0 +1,125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TableItem should render correctly based on item 1`] = `
+ShallowWrapper {
+  "complexSelector": ComplexSelector {
+    "buildPredicate": [Function],
+    "childrenOfNode": [Function],
+    "findWhereUnwrapped": [Function],
+  },
+  "length": 1,
+  "node": <tr>
+    <td>
+        LINK
+    </td>
+    <td
+        id="link"
+    >
+        127.9
+    </td>
+    <td>
+        A Few Seconds Ago...
+    </td>
+</tr>,
+  "nodes": Array [
+    <tr>
+      <td>
+            LINK
+      </td>
+      <td
+            id="link"
+      >
+            127.9
+      </td>
+      <td>
+            A Few Seconds Ago...
+      </td>
+</tr>,
+  ],
+  "options": Object {},
+  "renderer": ReactShallowRenderer {
+    "_instance": ShallowComponentWrapper {
+      "_calledComponentWillUnmount": false,
+      "_compositeType": 0,
+      "_context": Object {},
+      "_currentElement": <TableItem
+        name="link"
+        price={127.9}
+        updateDuration="A Few Seconds Ago..."
+/>,
+      "_debugID": 1,
+      "_hostContainerInfo": null,
+      "_hostParent": null,
+      "_instance": TableItem {
+        "_reactInternalInstance": [Circular],
+        "context": Object {},
+        "props": Object {
+          "name": "link",
+          "price": 127.9,
+          "updateDuration": "A Few Seconds Ago...",
+        },
+        "refs": Object {},
+        "state": Object {},
+        "updater": Object {
+          "enqueueCallback": [Function],
+          "enqueueCallbackInternal": [Function],
+          "enqueueElementInternal": [Function],
+          "enqueueForceUpdate": [Function],
+          "enqueueReplaceState": [Function],
+          "enqueueSetState": [Function],
+          "isMounted": [Function],
+          "validateCallback": [Function],
+        },
+      },
+      "_mountOrder": 1,
+      "_pendingCallbacks": null,
+      "_pendingElement": null,
+      "_pendingForceUpdate": false,
+      "_pendingReplaceState": false,
+      "_pendingStateQueue": null,
+      "_renderedComponent": NoopInternalComponent {
+        "_currentElement": <tr>
+          <td>
+                    LINK
+          </td>
+          <td
+                    id="link"
+          >
+                    127.9
+          </td>
+          <td>
+                    A Few Seconds Ago...
+          </td>
+</tr>,
+        "_debugID": 2,
+        "_renderedOutput": <tr>
+          <td>
+                    LINK
+          </td>
+          <td
+                    id="link"
+          >
+                    127.9
+          </td>
+          <td>
+                    A Few Seconds Ago...
+          </td>
+</tr>,
+      },
+      "_renderedNodeType": 0,
+      "_rootNodeID": 0,
+      "_topLevelWrapper": null,
+      "_updateBatchNumber": null,
+      "_warnedAboutRefsInRender": false,
+    },
+    "getRenderOutput": [Function],
+    "render": [Function],
+  },
+  "root": [Circular],
+  "unrendered": <TableItem
+    name="link"
+    price={127.9}
+    updateDuration="A Few Seconds Ago..."
+/>,
+}
+`;
